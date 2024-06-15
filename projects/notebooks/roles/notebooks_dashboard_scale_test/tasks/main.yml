@@ -136,7 +136,7 @@
     - name: Expose the service
       command: oc expose svc minio -n {{ notebooks_dashboard_scale_test_minio_namespace }}
       register: expose_result
-      ignore_errors: yes  
+      ignore_errors: true 
 
     - name: Get the route hostname
       command: oc get route/minio -o jsonpath={.spec.host} -n {{ notebooks_dashboard_scale_test_minio_namespace }}
