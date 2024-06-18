@@ -133,24 +133,23 @@
 
 - name: Set S3_HOST_BASE
   block:
-    - name: Expose the service
-      command: oc expose svc minio -n {{ notebooks_dashboard_scale_test_minio_namespace }}
-      register: expose_result
-      ignore_errors: true 
+  - name: Expose the service
+    command: oc expose svc minio -n {{ notebooks_dashboard_scale_test_minio_namespace }}
+    register: expose_result
+    ignore_errors: true 
 
-    - name: Get the route hostname
-      command: oc get route/minio -o jsonpath={.spec.host} -n {{ notebooks_dashboard_scale_test_minio_namespace }}
-      register: hostname_result
-      when: expose_result.changed or expose_result.rc == 0  
+  - name: Get the route hostname
+    command: oc get route/minio -o jsonpath={.spec.host} -n {{ notebooks_dashboard_scale_test_minio_namespace }}
+    register: hostname_result
+    when: expose_result.changed or expose_result.rc == 0  
 
-    - name: Set S3_HOST_BASE fact
-      set_fact:
-        S3_HOST_BASE: "http://{{ hostname_result.stdout }}"
+  - name: Set S3_HOST_BASE fact
+    set_fact:
+    S3_HOST_BASE: "http://{{ hostname_result.stdout }}"
 
-    - name: Debug the S3_HOST_BASE variable (optional)
-      debug:
-        msg: "S3_HOST_BASE is set to {{ S3_HOST_BASE }}"
-
+  - name: Debug the S3_HOST_BASE variable (optional)
+    debug:
+    msg: "S3_HOST_BASE is set to {{ S3_HOST_BASE }}"
 
 - name: Instantiate the RHODS tester job template
   template:
