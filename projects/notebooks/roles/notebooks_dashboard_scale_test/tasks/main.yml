@@ -73,11 +73,11 @@
       rhods_dashboard_product_name: "{{ rhods_dashboard_product_name.stdout }}"
       notebook_image_name_descr: "{{ notebook_image_name_descr_cmd.stdout }}"
 
-- name: Terminate the notebooks
-  environment:
-    KUBECONFIG: '{{ sut_cluster_kubeconfig }}'
-  shell: set -o pipefail; oc get notebooks -A -ojsonpath='{range .items[*]}{.metadata.name}{" -n "}{.metadata.namespace}{"\n"}{end}' | xargs --no-run-if-empty --replace bash -c "oc annotate notebook/{} --overwrite kubeflow-resource-stopped=stopped-by-ci-artifacts -oname" > /dev/null
-  when: notebooks_dashboard_scale_test_stop_notebooks_on_exit
+# - name: Terminate the notebooks
+#   environment:
+#     KUBECONFIG: '{{ sut_cluster_kubeconfig }}'
+#   shell: set -o pipefail; oc get notebooks -A -ojsonpath='{range .items[*]}{.metadata.name}{" -n "}{.metadata.namespace}{"\n"}{end}' | xargs --no-run-if-empty --replace bash -c "oc annotate notebook/{} --overwrite kubeflow-resource-stopped=stopped-by-ci-artifacts -oname" > /dev/null
+#   when: notebooks_dashboard_scale_test_stop_notebooks_on_exit
 
 - name: Get the ODS-CI sample var file
   shell: oc debug istag/{{ notebooks_dashboard_scale_test_ods_ci_istag }} -n {{ tester_namespace }} -- cat ods_ci/test-variables.yml > /tmp/test-variables.yml.example
@@ -136,20 +136,21 @@
   - name: Expose the service
     command: oc expose svc minio -n {{ notebooks_dashboard_scale_test_minio_namespace }}
     register: expose_result
-    ignore_errors: true 
+    ignore_errors: true
 
   - name: Get the route hostname
     command: oc get route/minio -o jsonpath={.spec.host} -n {{ notebooks_dashboard_scale_test_minio_namespace }}
     register: hostname_result
-    when: expose_result.changed or expose_result.rc == 0  
+    when: expose_result.changed or expose_result.rc == 0
 
   - name: Set S3_HOST_BASE fact
     set_fact:
-    S3_HOST_BASE: "http://{{ hostname_result.stdout }}"
+      S3_HOST_BASE: "http://{{ hostname_result.stdout }}"
 
   - name: Debug the S3_HOST_BASE variable (optional)
     debug:
-    msg: "S3_HOST_BASE is set to {{ S3_HOST_BASE }}"
+      msg: "S3_HOST_BASE is set to {{ S3_HOST_BASE }}"
+
 
 - name: Instantiate the RHODS tester job template
   template:
